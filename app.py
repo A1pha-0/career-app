@@ -487,6 +487,12 @@ div[data-testid="stRadio"] label {
     margin-right: 10px;
     border: 1px solid rgba(255,255,255,0.2);
 }
+/* ===== FINAL FORCE FIX ===== */
+
+div[data-testid="stRadio"] * {
+    color: white !important;
+    opacity: 1 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -3087,11 +3093,13 @@ if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_r
 """, unsafe_allow_html=True)
 
     # Render questions exactly like main questionnaire — no subfield labels shown
+    _sf_unanswered_set = set(st.session_state.get("sf_unanswered_qs", []))
     for i, (subfield, question) in enumerate(sf_qs):
         if f"sf_q_{i}" not in st.session_state:
             st.session_state[f"sf_q_{i}"] = None
+        _sf_highlight_class = " q-unanswered" if i in _sf_unanswered_set else ""
         st.markdown(f"""
-<div class="q-card">
+<div id="sf-question-{i}" class="q-card{_sf_highlight_class}">
     <div class="q-num">{i+1}</div>
     <div class="q-text">{question}</div>
 </div>
@@ -3116,7 +3124,17 @@ if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_r
         sf_answers = [st.session_state.get(f"sf_radio_{i}") for i in range(total_sf)]
         if None in sf_answers:
             st.error({"English":"⚠️  Please answer all specialisation questions before viewing your report.","Zulu":"⚠️  Sicela uphendule imibuzo yokukhetheka yonke ngaphambi kokubuka umbiko wakho.","Swahili":"⚠️  Tafadhali jibu maswali yote ya utaalamu kabla ya kuona ripoti yako."}.get(_sf_lang,"⚠️  Please answer all specialisation questions before viewing your report."))
+            _sf_unanswered_indices = [i for i, a in enumerate(sf_answers) if a is None]
+            st.session_state["sf_unanswered_qs"] = _sf_unanswered_indices
+            if _sf_unanswered_indices:
+                _sf_first = _sf_unanswered_indices[0]
+                components.html(f"""
+                <script>
+                    window.parent.document.getElementById('sf-question-{_sf_first}').scrollIntoView({{behavior:'smooth', block:'center'}});
+                </script>
+                """, height=0)
         else:
+            st.session_state["sf_unanswered_qs"] = []
             subfield_scores = {}
             for i, (subfield, _) in enumerate(sf_qs):
                 ans = sf_answers[i]
@@ -4830,6 +4848,26 @@ document.addEventListener("mouseout", function(e) {{
 // ────────────────────────────────────────────────────────────────────────────
 
 </script>
+
+<div id="print-bar" style="position:fixed;bottom:28px;right:28px;z-index:9999;">
+  <button onclick="window.print()" style="
+    display:flex;align-items:center;gap:10px;
+    background:linear-gradient(135deg,#7c3aed,#ec4899);
+    color:#ffffff;border:none;border-radius:50px;
+    padding:14px 28px;font-size:14px;font-weight:700;
+    font-family:'DM Sans',sans-serif;letter-spacing:0.5px;
+    cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.45);
+    transition:transform 0.15s,box-shadow 0.15s;">
+    &#128438;&nbsp; Download as PDF
+  </button>
+</div>
+<style>
+@media print {{
+  #print-bar {{ display: none; }}
+  body {{ background-image: none; background-color: #ffffff; color: #000000; }}
+  * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+}}
+</style>
 </body>
 </html>"""
 

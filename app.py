@@ -461,6 +461,21 @@ div[data-testid="stRadio"] input[type="radio"] {
 div[data-testid="stRadio"] > label > div:first-child {
     display: none !important;
 }
+/* ===== FINAL RADIO TEXT FIX ===== */
+
+/* Make ALL option text white */
+div[data-testid="stRadio"] label span {
+    color: white !important;
+}
+
+/* Optional: make the pill background slightly visible */
+div[data-testid="stRadio"] label {
+    background-color: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 8px 16px;
+    margin-right: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
 </style>
 """, unsafe_allow_html=True)
 

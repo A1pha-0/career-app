@@ -482,6 +482,21 @@ div[data-testid="stRadio"] label span {
     color: white !important;
     opacity: 1 !important;
 }
+/* ===== NUCLEAR FIX (REMOVE FADED LOOK) ===== */
+
+div[data-testid="stRadio"] label {
+    opacity: 1 !important;
+}
+
+div[data-testid="stRadio"] label span {
+    color: white !important;
+    opacity: 1 !important;
+}
+
+/* Fix unselected options specifically */
+div[data-testid="stRadio"] label:not(:has(input:checked)) {
+    opacity: 1 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 

@@ -476,6 +476,12 @@ div[data-testid="stRadio"] label {
     margin-right: 10px;
     border: 1px solid rgba(255,255,255,0.2);
 }
+/* FINAL OVERRIDE (STRONG FIX) */
+div[data-testid="stRadio"] label,
+div[data-testid="stRadio"] label span {
+    color: white !important;
+    opacity: 1 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 

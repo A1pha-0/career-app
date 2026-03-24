@@ -219,6 +219,17 @@ html, body, .stApp {
     margin-bottom: 4px;
 }
 .q-card:hover { border-color: rgba(34,197,94,0.55); }
+.q-card.q-unanswered {
+    border: 2px solid #f87171 !important;
+    background: rgba(239,68,68,0.13) !important;
+    box-shadow: 0 0 0 3px rgba(248,113,113,0.25), 0 2px 16px rgba(0,0,0,0.40) !important;
+    animation: pulse-red 1.2s ease-in-out 3;
+}
+@keyframes pulse-red {
+    0%   { box-shadow: 0 0 0 3px rgba(248,113,113,0.25); }
+    50%  { box-shadow: 0 0 0 7px rgba(248,113,113,0.0); }
+    100% { box-shadow: 0 0 0 3px rgba(248,113,113,0.25); }
+}
 .q-num {
     background: linear-gradient(135deg, #7c3aed, #ec4899);
     color: white;
@@ -475,33 +486,6 @@ div[data-testid="stRadio"] label {
     padding: 8px 16px;
     margin-right: 10px;
     border: 1px solid rgba(255,255,255,0.2);
-}
-/* FINAL OVERRIDE (STRONG FIX) */
-div[data-testid="stRadio"] label,
-div[data-testid="stRadio"] label span {
-    color: white !important;
-    opacity: 1 !important;
-}
-/* ===== NUCLEAR FIX (REMOVE FADED LOOK) ===== */
-
-div[data-testid="stRadio"] label {
-    opacity: 1 !important;
-}
-
-div[data-testid="stRadio"] label span {
-    color: white !important;
-    opacity: 1 !important;
-}
-
-/* Fix unselected options specifically */
-div[data-testid="stRadio"] label:not(:has(input:checked)) {
-    opacity: 1 !important;
-}
-/* ===== FINAL FORCE FIX ===== */
-
-div[data-testid="stRadio"] * {
-    color: white !important;
-    opacity: 1 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -1504,11 +1488,13 @@ if st.session_state.mode in ("interest", "both"):
 </div>
 """, unsafe_allow_html=True)
 
+    _unanswered_set = set(st.session_state.get("unanswered_qs", []))
     for i, q in enumerate(questions):
         if f"q_{i}" not in st.session_state:
             st.session_state[f"q_{i}"] = None
+        _highlight_class = " q-unanswered" if i in _unanswered_set else ""
         st.markdown(f"""
-    <div class="q-card">
+    <div id="question-{i}" class="q-card{_highlight_class}">
         <div class="q-num">{i+1}</div>
         <div class="q-text">{q}</div>
     </div>
@@ -3013,11 +2999,21 @@ if submit:
         st.error({"English":"⚠️  Please enter your full name before generating the report.","Zulu":"⚠️  Sicela ufake igama lakho eligcwele ngaphambi kokukhiqiza umbiko.","Swahili":"⚠️  Tafadhali ingiza jina lako kamili kabla ya kutengeneza ripoti."}.get(language,"⚠️  Please enter your full name before generating the report."))
     elif st.session_state.mode in ("interest", "both") and None in answers:
         st.error({"English":"⚠️  Please answer all 100 questions before generating your report.","Zulu":"⚠️  Sicela uphendule imibuzo yonke eyi-100 ngaphambi kokukhiqiza umbiko wakho.","Swahili":"⚠️  Tafadhali jibu maswali yote 100 kabla ya kutengeneza ripoti yako."}.get(language,"⚠️  Please answer all 100 questions before generating your report."))
+        _unanswered_indices = [i for i, a in enumerate(answers) if a is None]
+        st.session_state["unanswered_qs"] = _unanswered_indices
+        if _unanswered_indices:
+            _first_unanswered = _unanswered_indices[0]
+            components.html(f"""
+            <script>
+                window.parent.document.getElementById('question-{_first_unanswered}').scrollIntoView({{behavior:'smooth', block:'center'}});
+            </script>
+            """, height=0)
     elif st.session_state.mode == "marks" and sum(entered_marks.values()) == 0:
         st.error({"English":"⚠️  Please enter at least one subject mark before generating your report.","Zulu":"⚠️  Sicela ufake amaputho okungenani asubject elilodwa ngaphambi kokukhiqiza umbiko.","Swahili":"⚠️  Tafadhali ingiza angalau alama moja ya somo kabla ya kutengeneza ripoti."}.get(language,"⚠️  Please enter at least one subject mark before generating your report."))
     elif st.session_state.mode == "both" and sum(entered_marks.values()) == 0:
         st.error({"English":"⚠️  Please enter your subject marks as well (required for Combined mode).","Zulu":"⚠️  Sicela ufake namaputho ezifundo zakho (adingekile ku-Combined mode).","Swahili":"⚠️  Tafadhali ingiza pia alama zako za masomo (zinahitajika kwa hali iliyochanganywa)."}.get(language,"⚠️  Please enter your subject marks as well (required for Combined mode)."))
     else:
+        st.session_state["unanswered_qs"] = []
         if st.session_state.mode == "interest":
             entered_marks = {}
             marks_scores = {}

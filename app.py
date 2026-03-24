@@ -497,6 +497,12 @@ div[data-testid="stRadio"] label span {
 div[data-testid="stRadio"] label:not(:has(input:checked)) {
     opacity: 1 !important;
 }
+/* ===== FINAL FORCE FIX ===== */
+
+div[data-testid="stRadio"] * {
+    color: white !important;
+    opacity: 1 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 

@@ -3098,10 +3098,20 @@ if submit:
         st.session_state["sf_school"]          = school_name.strip()
         st.session_state["sf_language"]        = language
         st.session_state["sf_show_subfield_q"] = True
+        st.session_state["sf_scroll_to_top"] = True
         st.rerun()
 
 # ── STAGE 2: Show subfield questionnaire ─────────────────────────────────────
 if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_report_ready"):
+    # Scroll to top of page so user sees the specialisation questions
+    if st.session_state.pop("sf_scroll_to_top", False):
+        components.html("""
+        <script>
+        (function() {
+            window.parent.scrollTo({top: 0, behavior: 'smooth'});
+        })();
+        </script>
+        """, height=0)
     top_field = st.session_state["sf_top_field"]
 
     _sf_lang = st.session_state.get("sf_language","English")
@@ -4628,8 +4638,8 @@ body{{font-family:'DM Sans',sans-serif;background-image:url("data:image/png;base
 .rec-desc{{font-size:16px;color:rgba(255,255,255,0.80);font-weight:400;max-width:680px;line-height:1.75;margin-bottom:28px;}}
 .rec-stats{{display:flex;gap:20px;flex-wrap:wrap;}}
 .rec-stat{{background:rgba(255,255,255,0.85);border:1px solid rgba(34,197,94,0.20);border-radius:14px;padding:16px 24px;text-align:center;min-width:110px;}}
-.rec-stat-val{{font-size:26px;font-weight:800;color:var(--gold);line-height:1;margin-bottom:4px;}}
-.rec-stat-key{{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}}
+.rec-stat-val{{font-size:26px;font-weight:800;color:#000000;line-height:1;margin-bottom:4px;}}
+.rec-stat-key{{font-size:11px;color:#000000;letter-spacing:1px;text-transform:uppercase;}}
 .jobs-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px;margin-top:18px;}}
 .job-card{{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:13.5px;font-weight:600;color:#ffffff;position:relative;overflow:hidden;}}
 .job-card::before{{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#7c3aed,#ec4899);border-radius:3px 0 0 3px;}}

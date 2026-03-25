@@ -2685,17 +2685,7 @@ with col_b:
     btn_label = _btn_labels.get(language, _btn_labels["English"]).get(st.session_state.mode, "🔍 Generate My Career Report")
     submit = st.button(btn_label, use_container_width=True)
     if submit:
-            st.toast("📜 Scroll down for Specialisation questions", icon="🚀")
-            components.html(
-                """
-                <script>
-                    setTimeout(function() {
-                        window.parent.scrollBy({ top: 400, behavior: "smooth" });
-                    }, 600);
-                </script>
-                """,
-                height=0,
-            )
+        pass
 _footer_main = {"English":"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only","Zulu":"Uhlelo Lokuhlonyiswa Komhlaba &nbsp;·&nbsp; Ukuhlolwa Kwemfihlo &nbsp;·&nbsp; Ukusetshenziswa Komuntu Siqu Kuphela","Swahili":"Mfumo wa Ushauri wa Elimu Duniani &nbsp;·&nbsp; Tathmini ya Siri &nbsp;·&nbsp; Kwa Matumizi ya Kibinafsi Tu"}.get(language,"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only")
 st.markdown(f"<div class='page-footer'>{_footer_main}</div>", unsafe_allow_html=True)
 
@@ -3118,9 +3108,9 @@ if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_r
     if st.session_state.pop("sf_scroll_to_top", False):
         components.html("""
         <script>
-        (function() {
-            window.parent.scrollTo({top: 0, behavior: 'smooth'});
-        })();
+        setTimeout(function() {
+            window.parent.scrollBy({top: 320, behavior: 'smooth'});
+        }, 400);
         </script>
         """, height=0)
     top_field = st.session_state["sf_top_field"]

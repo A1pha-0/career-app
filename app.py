@@ -2689,10 +2689,13 @@ with col_b:
             components.html(
                 """
                 <script>
-                    window.parent.document.querySelector('section.main').scrollTo({
-                        top: 1500, 
-                        behavior: 'smooth'
-                    });
+                    setTimeout(function() {
+                        var mainSection = window.parent.document.querySelector('section.main');
+                        mainSection.scrollBy({
+                            top: 600, 
+                            behavior: 'smooth' 
+                        });
+                    }, 1000);
                 </script>
                 """,
                 height=0,

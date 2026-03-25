@@ -2,7 +2,14 @@ import streamlit as st
 import streamlit.components.v1 as components
 import json
 from datetime import date
+if "highlight" not in st.session_state:
+    st.session_state.highlight = []
 
+if "scroll_to" not in st.session_state:
+    st.session_state.scroll_to = None
+
+if "show_report" not in st.session_state:
+    st.session_state.show_report = False
 st.set_page_config(page_title="Global Career Guidance", layout="wide", page_icon="🎓")
 
 # ---------- STYLE ----------
@@ -1498,7 +1505,7 @@ if st.session_state.mode in ("interest", "both"):
     for i, q in enumerate(questions):
         if f"q_{i}" not in st.session_state:
             st.session_state[f"q_{i}"] = None
-        _highlight_class = " q-unanswered" if i in _unanswered_set else ""
+        _highlight_class = " q-unanswered" if i in st.session_state.highlight else ""
         st.markdown(f"""
     <div id="question-{i}" class="q-card{_highlight_class}">
         <div class="q-num">{i+1}</div>
@@ -1516,7 +1523,18 @@ if st.session_state.mode in ("interest", "both"):
         st.session_state[f"q_{i}"] = val
         answers.append(val)
         if val:
-            scores[question_categories[i]] += score_map[val]
+            scores[question_categories[i]] += score_map[val
+import streamlit.components.v1 as components
+
+if st.session_state.get("scroll_to") is not None:
+    components.html(f"""
+    <script>
+    const el = document.getElementById("question-{st.session_state.scroll_to}");
+    if (el) {{
+        el.scrollIntoView({{behavior: "smooth", block: "center"}});
+    }}
+    </script>
+    """, height=0)
 
 # ── SUBFIELD QUESTIONS DATA ──────────────────────────────────────────────────
 # ~4 questions per subfield, indirect, grade 8/9 appropriate
@@ -4895,3 +4913,74 @@ document.addEventListener("mouseout", function(e) {{
     # Reset subfield state so user can retake if needed
     st.session_state["sf_show_subfield_q"] = False
     st.session_state["sf_report_ready"]    = False
+# -------- GLOBAL VALIDATION GUARD --------
+def check_unanswered():
+    unanswered = []
+    for i in range(len(questions)):
+        if st.session_state.get(f"radio_{i}") is None:
+            unanswered.append(i)
+    return unanswered
+
+
+if st.session_state.get("show_report", False):
+    missing = check_unanswered()
+
+    if missing:
+        st.session_state.highlight = missing
+        st.session_state.scroll_to = missing[0]
+        st.session_state.show_report = False
+        st.warning("Please answer all questions before generating report.")
+        
+components.html("""
+<button onclick="downloadPDF()" style="
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    padding:12px 18px;
+    background:#4CAF50;
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    z-index:9999;
+">Download PDF</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+
+    const report = parent.document.querySelector('.main');
+
+    const canvas = await html2canvas(report, {
+        scale: 2,
+        useCORS: true
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const imgWidth = 210;
+    const pageHeight = 297;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+    }
+
+    pdf.save("career_report.pdf");
+}
+</script>
+""", height=0)

@@ -3098,14 +3098,6 @@ if submit:
         st.session_state["sf_school"]          = school_name.strip()
         st.session_state["sf_language"]        = language
         st.session_state["sf_show_subfield_q"] = True
-        # Inject scroll-to-top so user sees the subfield questions
-        components.html("""
-        <script>
-        setTimeout(function() {
-            window.parent.scrollTo({top: 0, behavior: 'smooth'});
-        }, 400);
-        </script>
-        """, height=0)
         st.rerun()
 
 # ── STAGE 2: Show subfield questionnaire ─────────────────────────────────────
@@ -4639,7 +4631,7 @@ body{{font-family:'DM Sans',sans-serif;background-image:url("data:image/png;base
 .rec-stat-val{{font-size:26px;font-weight:800;color:var(--gold);line-height:1;margin-bottom:4px;}}
 .rec-stat-key{{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}}
 .jobs-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px;margin-top:18px;}}
-.job-card{{background:rgba(255,255,255,0.92);border:1px solid rgba(0,0,0,0.15);border-radius:12px;padding:14px 16px;font-size:13.5px;font-weight:600;color:#0a0a0a;position:relative;overflow:hidden;}}
+.job-card{{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:13.5px;font-weight:600;color:#ffffff;position:relative;overflow:hidden;}}
 .job-card::before{{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#7c3aed,#ec4899);border-radius:3px 0 0 3px;}}
 .job-card.highlight{{background:linear-gradient(135deg,rgba(34,197,94,0.30),rgba(16,185,129,0.20));border:2px solid #22c55e;color:#ffffff;font-weight:700;box-shadow:0 0 18px rgba(16,185,129,0.4);}}
 .job-card.highlight::before{{background:linear-gradient(180deg,#10b981,#34d399);}}
@@ -4680,11 +4672,11 @@ body{{font-family:'DM Sans',sans-serif;background-image:url("data:image/png;base
 .rfooter-logo{{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--gold);margin-bottom:10px;}}
 .rfooter-text{{font-size:12px;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.7;}}
 .paths-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-top:18px;}}
-.path-card{{background:rgba(255,255,255,0.92);border:1px solid rgba(0,0,0,0.12);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:transform 0.18s;}}
+.path-card{{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:transform 0.18s;}}
 .path-card:hover{{transform:translateY(-2px);}}
 .path-card::before{{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--indigo),var(--gold));border-radius:4px 0 0 4px;}}
 .path-num{{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}}
-.path-title{{font-size:15px;font-weight:700;color:#0a0a0a;line-height:1.3;}}
+.path-title{{font-size:15px;font-weight:700;color:var(--text);line-height:1.3;}}
 .ns-skills-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;margin-bottom:32px;}}
 .ns-skill-card{{background:var(--surface);border:1px solid var(--border);border-radius:18px;display:flex;overflow:hidden;}}
 .ns-skill-accent{{width:5px;flex-shrink:0;}}

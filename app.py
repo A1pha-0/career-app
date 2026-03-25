@@ -2686,9 +2686,12 @@ with col_b:
     submit = st.button(btn_label, use_container_width=True)
     if submit:
         st.session_state.show_specialisation = True
-        # 👇 MUST be inside the if block
-        for _ in range(15):
-            st.write("")
+        
+        st.markdown("""
+        <script>
+        window.parent.scrollBy(0, 400);
+        </script>
+    """, unsafe_allow_html=True)
 
 _footer_main = {"English":"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only","Zulu":"Uhlelo Lokuhlonyiswa Komhlaba &nbsp;·&nbsp; Ukuhlolwa Kwemfihlo &nbsp;·&nbsp; Ukusetshenziswa Komuntu Siqu Kuphela","Swahili":"Mfumo wa Ushauri wa Elimu Duniani &nbsp;·&nbsp; Tathmini ya Siri &nbsp;·&nbsp; Kwa Matumizi ya Kibinafsi Tu"}.get(language,"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only")
 st.markdown(f"<div class='page-footer'>{_footer_main}</div>", unsafe_allow_html=True)

@@ -219,6 +219,17 @@ html, body, .stApp {
     margin-bottom: 4px;
 }
 .q-card:hover { border-color: rgba(34,197,94,0.55); }
+.q-card.q-unanswered {
+    border: 2px solid #f87171 !important;
+    background: rgba(239,68,68,0.13) !important;
+    box-shadow: 0 0 0 3px rgba(248,113,113,0.25), 0 2px 16px rgba(0,0,0,0.40) !important;
+    animation: pulse-red 1.2s ease-in-out 3;
+}
+@keyframes pulse-red {
+    0%   { box-shadow: 0 0 0 3px rgba(248,113,113,0.25); }
+    50%  { box-shadow: 0 0 0 7px rgba(248,113,113,0.0); }
+    100% { box-shadow: 0 0 0 3px rgba(248,113,113,0.25); }
+}
 .q-num {
     background: linear-gradient(135deg, #7c3aed, #ec4899);
     color: white;
@@ -475,27 +486,6 @@ div[data-testid="stRadio"] label {
     padding: 8px 16px;
     margin-right: 10px;
     border: 1px solid rgba(255,255,255,0.2);
-}
-/* FINAL OVERRIDE (STRONG FIX) */
-div[data-testid="stRadio"] label,
-div[data-testid="stRadio"] label span {
-    color: white !important;
-    opacity: 1 !important;
-}
-/* ===== NUCLEAR FIX (REMOVE FADED LOOK) ===== */
-
-div[data-testid="stRadio"] label {
-    opacity: 1 !important;
-}
-
-div[data-testid="stRadio"] label span {
-    color: white !important;
-    opacity: 1 !important;
-}
-
-/* Fix unselected options specifically */
-div[data-testid="stRadio"] label:not(:has(input:checked)) {
-    opacity: 1 !important;
 }
 /* ===== FINAL FORCE FIX ===== */
 
@@ -1504,11 +1494,13 @@ if st.session_state.mode in ("interest", "both"):
 </div>
 """, unsafe_allow_html=True)
 
+    _unanswered_set = set(st.session_state.get("unanswered_qs", []))
     for i, q in enumerate(questions):
         if f"q_{i}" not in st.session_state:
             st.session_state[f"q_{i}"] = None
+        _highlight_class = " q-unanswered" if i in _unanswered_set else ""
         st.markdown(f"""
-    <div class="q-card">
+    <div id="question-{i}" class="q-card{_highlight_class}">
         <div class="q-num">{i+1}</div>
         <div class="q-text">{q}</div>
     </div>
@@ -3013,11 +3005,79 @@ if submit:
         st.error({"English":"⚠️  Please enter your full name before generating the report.","Zulu":"⚠️  Sicela ufake igama lakho eligcwele ngaphambi kokukhiqiza umbiko.","Swahili":"⚠️  Tafadhali ingiza jina lako kamili kabla ya kutengeneza ripoti."}.get(language,"⚠️  Please enter your full name before generating the report."))
     elif st.session_state.mode in ("interest", "both") and None in answers:
         st.error({"English":"⚠️  Please answer all 100 questions before generating your report.","Zulu":"⚠️  Sicela uphendule imibuzo yonke eyi-100 ngaphambi kokukhiqiza umbiko wakho.","Swahili":"⚠️  Tafadhali jibu maswali yote 100 kabla ya kutengeneza ripoti yako."}.get(language,"⚠️  Please answer all 100 questions before generating your report."))
+        _unanswered_indices = [i for i, a in enumerate(answers) if a is None]
+        st.session_state["unanswered_qs"] = _unanswered_indices
+        if _unanswered_indices:
+            _first_unanswered = _unanswered_indices[0]
+            _unanswered_js_list = str(_unanswered_indices)
+            components.html(f"""
+            <script>
+            (function() {{
+                var ids = {_unanswered_js_list};
+                // Highlight all unanswered cards
+                ids.forEach(function(i) {{
+                    var el = window.parent.document.getElementById('question-' + i);
+                    if (el) el.classList.add('q-unanswered');
+                }});
+                // Scroll to first unanswered
+                var first = window.parent.document.getElementById('question-{_first_unanswered}');
+                if (first) first.scrollIntoView({{behavior:'smooth', block:'center'}});
+
+                // Store in sessionStorage for sequential auto-scroll
+                window.parent.sessionStorage.setItem('unans_main', JSON.stringify(ids));
+
+                // Attach one-time change listeners to auto-advance to next unanswered
+                function attachListeners() {{
+                    var remaining = JSON.parse(window.parent.sessionStorage.getItem('unans_main') || '[]');
+                    remaining.forEach(function(i) {{
+                        var card = window.parent.document.getElementById('question-' + i);
+                        if (!card) return;
+                        // Find radio buttons near this card (in the next sibling containers)
+                        var parent = card.parentNode;
+                        if (!parent) return;
+                        var allRadios = parent.querySelectorAll('input[type="radio"]');
+                        // get the radio group belonging to this question index
+                        // each q-card is followed by streamlit radio — find by proximity
+                        var questionRadios = [];
+                        var sibling = card.nextElementSibling;
+                        for (var s = 0; s < 6 && sibling; s++) {{
+                            var r = sibling.querySelectorAll('input[type="radio"]');
+                            if (r.length > 0) {{ questionRadios = r; break; }}
+                            sibling = sibling.nextElementSibling;
+                        }}
+                        questionRadios.forEach(function(radio) {{
+                            radio.addEventListener('change', function onAns() {{
+                                radio.removeEventListener('change', onAns);
+                                // Remove highlight
+                                card.classList.remove('q-unanswered');
+                                // Update remaining list
+                                var cur = JSON.parse(window.parent.sessionStorage.getItem('unans_main') || '[]');
+                                cur = cur.filter(function(x) {{ return x !== i; }});
+                                window.parent.sessionStorage.setItem('unans_main', JSON.stringify(cur));
+                                // Scroll to next unanswered
+                                if (cur.length > 0) {{
+                                    var nextId = cur[0];
+                                    var nextEl = window.parent.document.getElementById('question-' + nextId);
+                                    if (nextEl) {{
+                                        setTimeout(function() {{
+                                            nextEl.scrollIntoView({{behavior:'smooth', block:'center'}});
+                                        }}, 350);
+                                    }}
+                                }}
+                            }});
+                        }});
+                    }});
+                }}
+                setTimeout(attachListeners, 900);
+            }})();
+            </script>
+            """, height=0)
     elif st.session_state.mode == "marks" and sum(entered_marks.values()) == 0:
         st.error({"English":"⚠️  Please enter at least one subject mark before generating your report.","Zulu":"⚠️  Sicela ufake amaputho okungenani asubject elilodwa ngaphambi kokukhiqiza umbiko.","Swahili":"⚠️  Tafadhali ingiza angalau alama moja ya somo kabla ya kutengeneza ripoti."}.get(language,"⚠️  Please enter at least one subject mark before generating your report."))
     elif st.session_state.mode == "both" and sum(entered_marks.values()) == 0:
         st.error({"English":"⚠️  Please enter your subject marks as well (required for Combined mode).","Zulu":"⚠️  Sicela ufake namaputho ezifundo zakho (adingekile ku-Combined mode).","Swahili":"⚠️  Tafadhali ingiza pia alama zako za masomo (zinahitajika kwa hali iliyochanganywa)."}.get(language,"⚠️  Please enter your subject marks as well (required for Combined mode)."))
     else:
+        st.session_state["unanswered_qs"] = []
         if st.session_state.mode == "interest":
             entered_marks = {}
             marks_scores = {}
@@ -3091,11 +3151,13 @@ if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_r
 """, unsafe_allow_html=True)
 
     # Render questions exactly like main questionnaire — no subfield labels shown
+    _sf_unanswered_set = set(st.session_state.get("sf_unanswered_qs", []))
     for i, (subfield, question) in enumerate(sf_qs):
         if f"sf_q_{i}" not in st.session_state:
             st.session_state[f"sf_q_{i}"] = None
+        _sf_highlight_class = " q-unanswered" if i in _sf_unanswered_set else ""
         st.markdown(f"""
-<div class="q-card">
+<div id="sf-question-{i}" class="q-card{_sf_highlight_class}">
     <div class="q-num">{i+1}</div>
     <div class="q-text">{question}</div>
 </div>
@@ -3120,7 +3182,65 @@ if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_r
         sf_answers = [st.session_state.get(f"sf_radio_{i}") for i in range(total_sf)]
         if None in sf_answers:
             st.error({"English":"⚠️  Please answer all specialisation questions before viewing your report.","Zulu":"⚠️  Sicela uphendule imibuzo yokukhetheka yonke ngaphambi kokubuka umbiko wakho.","Swahili":"⚠️  Tafadhali jibu maswali yote ya utaalamu kabla ya kuona ripoti yako."}.get(_sf_lang,"⚠️  Please answer all specialisation questions before viewing your report."))
+            _sf_unanswered_indices = [i for i, a in enumerate(sf_answers) if a is None]
+            st.session_state["sf_unanswered_qs"] = _sf_unanswered_indices
+            if _sf_unanswered_indices:
+                _sf_first = _sf_unanswered_indices[0]
+                _sf_unans_js = str(_sf_unanswered_indices)
+                components.html(f"""
+                <script>
+                (function() {{
+                    var ids = {_sf_unans_js};
+                    // Highlight all unanswered subfield cards
+                    ids.forEach(function(i) {{
+                        var el = window.parent.document.getElementById('sf-question-' + i);
+                        if (el) el.classList.add('q-unanswered');
+                    }});
+                    // Scroll to first unanswered
+                    var first = window.parent.document.getElementById('sf-question-{_sf_first}');
+                    if (first) first.scrollIntoView({{behavior:'smooth', block:'center'}});
+
+                    // Store for sequential navigation
+                    window.parent.sessionStorage.setItem('unans_sf', JSON.stringify(ids));
+
+                    function attachSfListeners() {{
+                        var remaining = JSON.parse(window.parent.sessionStorage.getItem('unans_sf') || '[]');
+                        remaining.forEach(function(i) {{
+                            var card = window.parent.document.getElementById('sf-question-' + i);
+                            if (!card) return;
+                            var questionRadios = [];
+                            var sibling = card.nextElementSibling;
+                            for (var s = 0; s < 6 && sibling; s++) {{
+                                var r = sibling.querySelectorAll('input[type="radio"]');
+                                if (r.length > 0) {{ questionRadios = r; break; }}
+                                sibling = sibling.nextElementSibling;
+                            }}
+                            questionRadios.forEach(function(radio) {{
+                                radio.addEventListener('change', function onSfAns() {{
+                                    radio.removeEventListener('change', onSfAns);
+                                    card.classList.remove('q-unanswered');
+                                    var cur = JSON.parse(window.parent.sessionStorage.getItem('unans_sf') || '[]');
+                                    cur = cur.filter(function(x) {{ return x !== i; }});
+                                    window.parent.sessionStorage.setItem('unans_sf', JSON.stringify(cur));
+                                    if (cur.length > 0) {{
+                                        var nextId = cur[0];
+                                        var nextEl = window.parent.document.getElementById('sf-question-' + nextId);
+                                        if (nextEl) {{
+                                            setTimeout(function() {{
+                                                nextEl.scrollIntoView({{behavior:'smooth', block:'center'}});
+                                            }}, 350);
+                                        }}
+                                    }}
+                                }});
+                            }});
+                        }});
+                    }}
+                    setTimeout(attachSfListeners, 900);
+                }})();
+                </script>
+                """, height=0)
         else:
+            st.session_state["sf_unanswered_qs"] = []
             subfield_scores = {}
             for i, (subfield, _) in enumerate(sf_qs):
                 ans = sf_answers[i]
@@ -4834,6 +4954,26 @@ document.addEventListener("mouseout", function(e) {{
 // ────────────────────────────────────────────────────────────────────────────
 
 </script>
+
+<div id="print-bar" style="position:fixed;bottom:28px;right:28px;z-index:9999;">
+  <button onclick="window.print()" style="
+    display:flex;align-items:center;gap:10px;
+    background:linear-gradient(135deg,#7c3aed,#ec4899);
+    color:#ffffff;border:none;border-radius:50px;
+    padding:14px 28px;font-size:14px;font-weight:700;
+    font-family:'DM Sans',sans-serif;letter-spacing:0.5px;
+    cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.45);
+    transition:transform 0.15s,box-shadow 0.15s;">
+    &#128438;&nbsp; Download as PDF
+  </button>
+</div>
+<style>
+@media print {{
+  #print-bar {{ display: none; }}
+  body {{ background-image: none; background-color: #ffffff; color: #000000; }}
+  * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+}}
+</style>
 </body>
 </html>"""
 

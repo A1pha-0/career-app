@@ -1523,7 +1523,7 @@ if st.session_state.mode in ("interest", "both"):
         st.session_state[f"q_{i}"] = val
         answers.append(val)
         if val:
-            scores[question_categories[i]] += score_map[val
+            scores[question_categories[i]] += score_map[val]
 import streamlit.components.v1 as components
 
 if st.session_state.get("scroll_to") is not None:

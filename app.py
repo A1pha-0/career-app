@@ -2685,6 +2685,8 @@ with col_b:
     btn_label = _btn_labels.get(language, _btn_labels["English"]).get(st.session_state.mode, "🔍 Generate My Career Report")
     submit = st.button(btn_label, use_container_width=True)
     if submit:
+         st.session_state.show_msg = True
+    if submit:
          st.markdown("""
          <div style="
              background: rgba(255, 255, 255, 0.1);
@@ -2697,8 +2699,8 @@ with col_b:
              font-weight: 500;
              margin-top: 15px;
              backdrop-filter: blur(10px);
-             ⬇️✨ <b>Scroll down to answer your Specialisation Questions</b> 🚀📊
-        ">
+         ">
+             ⬇️✨ <b>Scroll down to answer your Specialisation Questions</b> 🚀📊       
         </div>
         """, unsafe_allow_html=True)
         

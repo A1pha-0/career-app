@@ -2688,27 +2688,27 @@ with col_b:
         components.html("""
         <script>
         (function() {
-            var modal = window.parent.document.getElementById('_scroll_modal');
-            if (!modal) {
-                modal = window.parent.document.createElement('div');
-                modal.id = '_scroll_modal';
-                modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);';
-                modal.innerHTML = '<div style="background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.4);border-radius:20px;padding:36px 40px;max-width:380px;text-align:center;font-family:DM Sans,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);">'
-                    + '<div style="font-size:36px;margin-bottom:12px;">⬇️</div>'
-                    + '<div style="font-size:18px;font-weight:700;color:#ffffff;margin-bottom:10px;">Almost there!</div>'
-                    + '<div style="font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:24px;">Scroll down for the <strong style="color:#a78bfa;">specialisation questions</strong> to complete your report.</div>'
-                    + '<button id="_scroll_modal_ok" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;">Got it!</button>'
-                    + '</div>';
-                window.parent.document.body.appendChild(modal);
-            } else {
-                modal.style.display = 'flex';
-            }
+            // Remove any existing modal so it's always freshly created on every click
+            var old = window.parent.document.getElementById('_scroll_modal');
+            if (old) old.parentNode.removeChild(old);
+
+            var modal = window.parent.document.createElement('div');
+            modal.id = '_scroll_modal';
+            modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);';
+            modal.innerHTML = '<div style="background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.4);border-radius:20px;padding:36px 40px;max-width:380px;text-align:center;font-family:DM Sans,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);">'
+                + '<div style="font-size:36px;margin-bottom:12px;">⬇️</div>'
+                + '<div style="font-size:18px;font-weight:700;color:#ffffff;margin-bottom:10px;">Almost there!</div>'
+                + '<div style="font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:24px;">Scroll down for the <strong style="color:#a78bfa;">specialisation questions</strong> to complete your report.</div>'
+                + '<button id="_scroll_modal_ok" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;">Got it!</button>'
+                + '</div>';
+            window.parent.document.body.appendChild(modal);
+
             window.parent.document.getElementById('_scroll_modal_ok').onclick = function() {
                 modal.style.display = 'none';
             };
         })();
         </script>
-        """, height=0)
+        """, height=1)
 _footer_main = {"English":"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only","Zulu":"Uhlelo Lokuhlonyiswa Komhlaba &nbsp;·&nbsp; Ukuhlolwa Kwemfihlo &nbsp;·&nbsp; Ukusetshenziswa Komuntu Siqu Kuphela","Swahili":"Mfumo wa Ushauri wa Elimu Duniani &nbsp;·&nbsp; Tathmini ya Siri &nbsp;·&nbsp; Kwa Matumizi ya Kibinafsi Tu"}.get(language,"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only")
 st.markdown(f"<div class='page-footer'>{_footer_main}</div>", unsafe_allow_html=True)
 

@@ -2685,7 +2685,30 @@ with col_b:
     btn_label = _btn_labels.get(language, _btn_labels["English"]).get(st.session_state.mode, "🔍 Generate My Career Report")
     submit = st.button(btn_label, use_container_width=True)
     if submit:
-            st.toast("⬇️ Scroll down for specialisation questions after submitting", icon="📜")
+        components.html("""
+        <script>
+        (function() {
+            var modal = window.parent.document.getElementById('_scroll_modal');
+            if (!modal) {
+                modal = window.parent.document.createElement('div');
+                modal.id = '_scroll_modal';
+                modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);';
+                modal.innerHTML = '<div style="background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.4);border-radius:20px;padding:36px 40px;max-width:380px;text-align:center;font-family:DM Sans,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);">'
+                    + '<div style="font-size:36px;margin-bottom:12px;">⬇️</div>'
+                    + '<div style="font-size:18px;font-weight:700;color:#ffffff;margin-bottom:10px;">Almost there!</div>'
+                    + '<div style="font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:24px;">Scroll down for the <strong style="color:#a78bfa;">specialisation questions</strong> to complete your report.</div>'
+                    + '<button id="_scroll_modal_ok" style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;">Got it!</button>'
+                    + '</div>';
+                window.parent.document.body.appendChild(modal);
+            } else {
+                modal.style.display = 'flex';
+            }
+            window.parent.document.getElementById('_scroll_modal_ok').onclick = function() {
+                modal.style.display = 'none';
+            };
+        })();
+        </script>
+        """, height=0)
 _footer_main = {"English":"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only","Zulu":"Uhlelo Lokuhlonyiswa Komhlaba &nbsp;·&nbsp; Ukuhlolwa Kwemfihlo &nbsp;·&nbsp; Ukusetshenziswa Komuntu Siqu Kuphela","Swahili":"Mfumo wa Ushauri wa Elimu Duniani &nbsp;·&nbsp; Tathmini ya Siri &nbsp;·&nbsp; Kwa Matumizi ya Kibinafsi Tu"}.get(language,"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only")
 st.markdown(f"<div class='page-footer'>{_footer_main}</div>", unsafe_allow_html=True)
 
@@ -4966,25 +4989,7 @@ document.addEventListener("mouseout", function(e) {{
 
 </script>
 
-<div id="print-bar" style="position:fixed;bottom:28px;right:28px;z-index:9999;">
-  <button onclick="window.print()" style="
-    display:flex;align-items:center;gap:10px;
-    background:linear-gradient(135deg,#7c3aed,#ec4899);
-    color:#ffffff;border:none;border-radius:50px;
-    padding:14px 28px;font-size:14px;font-weight:700;
-    font-family:'DM Sans',sans-serif;letter-spacing:0.5px;
-    cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.45);
-    transition:transform 0.15s,box-shadow 0.15s;">
-    &#128438;&nbsp; Download as PDF
-  </button>
-</div>
-<style>
-@media print {{
-  #print-bar {{ display: none; }}
-  body {{ background-image: none; background-color: #ffffff; color: #000000; }}
-  * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
-}}
-</style>
+
 <div style="text-align:center;padding:32px 16px 40px;font-family:'DM Sans',sans-serif;">
   <a href="https://docs.google.com/forms/d/e/1FAIpQLSf7u-BbRvTY7U85V7N2ivqH2ZjYah4sYsRKWbl2B_VixgE4sQ/viewform?usp=publish-editor" target="_blank" style="
     display:inline-block;

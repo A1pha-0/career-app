@@ -3113,31 +3113,23 @@ if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_r
         }, 400);
         </script>
         """, height=0)
-        components.html("""<!DOCTYPE html><html><head><style>
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;background:transparent;}
-.overlay{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);}
-.box{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.5);border-radius:20px;padding:40px;width:360px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.6);}
-.icon{font-size:40px;margin-bottom:14px;}
-.title{font-size:19px;font-weight:700;color:#fff;margin-bottom:10px;}
-.msg{font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;margin-bottom:26px;}
-.msg strong{color:#a78bfa;}
-.btn{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:15px;font-weight:700;cursor:pointer;}
-</style></head><body>
-<div class="overlay" id="ov">
-  <div class="box">
-    <div class="icon">&#11015;&#65039;</div>
-    <div class="title">Almost there!</div>
-    <div class="msg">Scroll down for the <strong>specialisation questions</strong> to complete your report.</div>
-    <button class="btn" id="ok">Got it!</button>
-  </div>
-</div>
-<script>
-document.getElementById('ok').addEventListener('click',function(){
-  document.getElementById('ov').style.display='none';
-});
-</script>
-</body></html>""", height=500, scrolling=False)
+        components.html("""<script>
+(function(){
+    var doc = window.parent.document;
+    var old = doc.getElementById('_sm');
+    if(old) old.remove();
+    var s = doc.createElement('style');
+    s.textContent='#_sm{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);}#_sm_box{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.5);border-radius:20px;padding:40px;width:360px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.6);}#_sm_icon{font-size:40px;margin-bottom:14px;}#_sm_title{font-size:19px;font-weight:700;color:#fff;margin-bottom:10px;}#_sm_msg{font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;margin-bottom:26px;}#_sm_msg strong{color:#a78bfa;}#_sm_btn{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:15px;font-weight:700;cursor:pointer;}';
+    doc.head.appendChild(s);
+    var d = doc.createElement('div');
+    d.id='_sm';
+    d.innerHTML='<div id="_sm_box"><div id="_sm_icon">&#11015;&#65039;</div><div id="_sm_title">Almost there!</div><div id="_sm_msg">Scroll down for the <strong>specialisation questions</strong> to complete your report.</div><button id="_sm_btn">Got it!</button></div>';
+    doc.body.appendChild(d);
+    doc.getElementById('_sm_btn').addEventListener('click',function(){
+        doc.getElementById('_sm').remove();
+    });
+})();
+</script>""", height=0)
     top_field = st.session_state["sf_top_field"]
 
     _sf_lang = st.session_state.get("sf_language","English")

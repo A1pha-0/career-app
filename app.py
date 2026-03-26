@@ -5020,6 +5020,15 @@ document.addEventListener("mouseout", function(e) {{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+function loadImage(src) {{
+  return new Promise((res, rej) => {{
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = src;
+  }});
+}}
+
 async function generatePDF() {{
   const btn = document.getElementById('pdf-dl-btn');
   const wrap = document.getElementById('pdf-btn-wrap');
@@ -5034,43 +5043,71 @@ async function generatePDF() {{
   const A4H = 1123;
 
   try {{
-    // Fix background-attachment:fixed so html2canvas can capture it
-    const bodyStyle = document.body.style;
-    const origAttach = bodyStyle.backgroundAttachment;
-    bodyStyle.backgroundAttachment = 'scroll';
+    // 1. Extract the background image src from body's computed style
+    const computed = window.getComputedStyle(document.body);
+    const bgRaw = computed.backgroundImage; // e.g. url("data:image/png;base64,...")
+    const bgMatch = bgRaw.match(/url\(["']?(data:[^"')]+)["']?\)/);
+    const bgSrc = bgMatch ? bgMatch[1] : null;
 
-    const canvas = await html2canvas(document.body, {{
+    // 2. Preload background image
+    const bgImg = bgSrc ? await loadImage(bgSrc).catch(() => null) : null;
+
+    // 3. Capture page content WITHOUT background (transparent)
+    const contentCanvas = await html2canvas(document.body, {{
       scale: 1.5,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#071a07',
+      backgroundColor: null,   // transparent — we composite manually
       scrollX: 0,
       scrollY: 0,
       windowWidth: document.documentElement.scrollWidth,
       windowHeight: document.documentElement.scrollHeight,
       logging: false,
       imageTimeout: 0,
-      removeContainer: true
+      removeContainer: true,
+      onclone: (doc) => {{
+        // Remove background from cloned body so html2canvas skips it
+        doc.body.style.backgroundImage = 'none';
+        doc.body.style.backgroundColor = 'transparent';
+      }}
     }});
 
-    bodyStyle.backgroundAttachment = origAttach;
-
     const pdf = new jsPDF({{ unit: 'px', format: [A4W, A4H], hotfixes: ['px_scaling'] }});
-    const scale = A4W / canvas.width;
+    const scale = A4W / contentCanvas.width;
     const sliceH = Math.floor(A4H / scale);
 
     let yOffset = 0;
     let pageNum = 0;
 
-    while (yOffset < canvas.height) {{
-      const thisSlice = Math.min(sliceH, canvas.height - yOffset);
-      const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width = canvas.width;
-      sliceCanvas.height = thisSlice;
-      const ctx = sliceCanvas.getContext('2d');
-      ctx.drawImage(canvas, 0, yOffset, canvas.width, thisSlice, 0, 0, canvas.width, thisSlice);
+    while (yOffset < contentCanvas.height) {{
+      const thisSlice = Math.min(sliceH, contentCanvas.height - yOffset);
 
-      const imgData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+      // Composite canvas: bg first, then content slice on top
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = contentCanvas.width;
+      pageCanvas.height = thisSlice;
+      const ctx = pageCanvas.getContext('2d');
+
+      // Fill dark base colour
+      ctx.fillStyle = '#071a07';
+      ctx.fillRect(0, 0, pageCanvas.width, thisSlice);
+
+      // Draw background image tiled/stretched to cover this page slice
+      if (bgImg) {{
+        // tile to match original body bg-size:cover behaviour
+        const bw = pageCanvas.width;
+        const bh = Math.round(bgImg.height * (bw / bgImg.width));
+        // figure out which vertical offset in the bg image this slice maps to
+        const totalH = contentCanvas.height;
+        const bgTotalH = bh * Math.ceil(totalH / bh);  // stretched full height
+        const bgY = -Math.round((yOffset / totalH) * bgTotalH);
+        ctx.drawImage(bgImg, 0, bgY, bw, bgTotalH);
+      }}
+
+      // Draw content slice on top
+      ctx.drawImage(contentCanvas, 0, yOffset, contentCanvas.width, thisSlice, 0, 0, contentCanvas.width, thisSlice);
+
+      const imgData = pageCanvas.toDataURL('image/jpeg', 0.92);
       const renderedH = thisSlice * scale;
 
       if (pageNum > 0) pdf.addPage([A4W, A4H]);
@@ -5087,7 +5124,7 @@ async function generatePDF() {{
   }}
 
   wrap.style.display = 'block';
-  btn.textContent = '⬇️ Download as PDF';
+  btn.innerHTML = '&#128438;&nbsp; Download as PDF';
   btn.disabled = false;
 }}
 </script>

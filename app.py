@@ -5023,53 +5023,60 @@ document.addEventListener("mouseout", function(e) {{
 async function generatePDF() {{
   const btn = document.getElementById('pdf-dl-btn');
   const wrap = document.getElementById('pdf-btn-wrap');
-  btn.textContent = '⏳ Generating...';
+  btn.innerHTML = '⏳ Generating…';
   btn.disabled = true;
   wrap.style.display = 'none';
 
-  // Small delay to let the button hide before capture
-  await new Promise(r => setTimeout(r, 100));
+  await new Promise(r => setTimeout(r, 80));
 
   const {{ jsPDF }} = window.jspdf;
-  const pageW = 794;   // A4 at 96dpi px width
-  const pageH = 1123;  // A4 at 96dpi px height
+  const A4W = 794;
+  const A4H = 1123;
 
   try {{
+    // Fix background-attachment:fixed so html2canvas can capture it
+    const bodyStyle = document.body.style;
+    const origAttach = bodyStyle.backgroundAttachment;
+    bodyStyle.backgroundAttachment = 'scroll';
+
     const canvas = await html2canvas(document.body, {{
-      scale: 2,
+      scale: 1.5,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: null,
+      backgroundColor: '#071a07',
       scrollX: 0,
       scrollY: 0,
-      windowWidth: document.body.scrollWidth,
-      windowHeight: document.body.scrollHeight,
-      logging: false
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.documentElement.scrollHeight,
+      logging: false,
+      imageTimeout: 0,
+      removeContainer: true
     }});
 
-    const imgW = pageW;
-    const totalH = Math.ceil(canvas.height / canvas.width * imgW);
-    const pdf = new jsPDF({{ unit: 'px', format: [pageW, pageH], hotfixes: ['px_scaling'] }});
+    bodyStyle.backgroundAttachment = origAttach;
+
+    const pdf = new jsPDF({{ unit: 'px', format: [A4W, A4H], hotfixes: ['px_scaling'] }});
+    const scale = A4W / canvas.width;
+    const sliceH = Math.floor(A4H / scale);
 
     let yOffset = 0;
     let pageNum = 0;
 
     while (yOffset < canvas.height) {{
-      // How many source pixels fit in one page
-      const sliceH = Math.floor(pageH * (canvas.width / imgW));
+      const thisSlice = Math.min(sliceH, canvas.height - yOffset);
       const sliceCanvas = document.createElement('canvas');
       sliceCanvas.width = canvas.width;
-      sliceCanvas.height = Math.min(sliceH, canvas.height - yOffset);
+      sliceCanvas.height = thisSlice;
       const ctx = sliceCanvas.getContext('2d');
-      ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
+      ctx.drawImage(canvas, 0, yOffset, canvas.width, thisSlice, 0, 0, canvas.width, thisSlice);
 
-      const imgData = sliceCanvas.toDataURL('image/jpeg', 0.95);
-      const renderedH = sliceCanvas.height * (imgW / canvas.width);
+      const imgData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+      const renderedH = thisSlice * scale;
 
-      if (pageNum > 0) pdf.addPage([pageW, pageH]);
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgW, renderedH);
+      if (pageNum > 0) pdf.addPage([A4W, A4H]);
+      pdf.addImage(imgData, 'JPEG', 0, 0, A4W, renderedH);
 
-      yOffset += sliceCanvas.height;
+      yOffset += thisSlice;
       pageNum++;
     }}
 

@@ -2685,49 +2685,6 @@ with col_b:
     btn_label = _btn_labels.get(language, _btn_labels["English"]).get(st.session_state.mode, "🔍 Generate My Career Report")
     submit = st.button(btn_label, use_container_width=True)
     if submit:
-        components.html("""
-        <!DOCTYPE html>
-        <html>
-        <head><style>
-        body { margin:0; padding:0; background:transparent; }
-        #overlay {
-            position:fixed; inset:0; z-index:99999;
-            display:flex; align-items:center; justify-content:center;
-            background:rgba(0,0,0,0.55); backdrop-filter:blur(4px);
-        }
-        #box {
-            background:linear-gradient(135deg,#1e1b4b,#0f172a);
-            border:1px solid rgba(167,139,250,0.4);
-            border-radius:20px; padding:36px 40px; max-width:380px;
-            text-align:center; font-family:'DM Sans',sans-serif;
-            box-shadow:0 20px 60px rgba(0,0,0,0.5);
-        }
-        #gotit {
-            background:linear-gradient(135deg,#7c3aed,#ec4899);
-            color:#fff; border:none; border-radius:50px;
-            padding:12px 32px; font-size:14px; font-weight:700;
-            cursor:pointer; font-family:'DM Sans',sans-serif;
-        }
-        </style></head>
-        <body>
-        <div id="overlay">
-            <div id="box">
-                <div style="font-size:36px;margin-bottom:12px;">⬇️</div>
-                <div style="font-size:18px;font-weight:700;color:#ffffff;margin-bottom:10px;">Almost there!</div>
-                <div style="font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:24px;">
-                    Scroll down for the <strong style="color:#a78bfa;">specialisation questions</strong> to complete your report.
-                </div>
-                <button id="gotit">Got it!</button>
-            </div>
-        </div>
-        <script>
-        document.getElementById('gotit').addEventListener('click', function() {
-            document.getElementById('overlay').style.display = 'none';
-        });
-        </script>
-        </body>
-        </html>
-        """, height=300, scrolling=False)
 _footer_main = {"English":"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only","Zulu":"Uhlelo Lokuhlonyiswa Komhlaba &nbsp;·&nbsp; Ukuhlolwa Kwemfihlo &nbsp;·&nbsp; Ukusetshenziswa Komuntu Siqu Kuphela","Swahili":"Mfumo wa Ushauri wa Elimu Duniani &nbsp;·&nbsp; Tathmini ya Siri &nbsp;·&nbsp; Kwa Matumizi ya Kibinafsi Tu"}.get(language,"Global Education Counselling System &nbsp;·&nbsp; Confidential Assessment &nbsp;·&nbsp; For Personal Use Only")
 st.markdown(f"<div class='page-footer'>{_footer_main}</div>", unsafe_allow_html=True)
 
@@ -3155,6 +3112,31 @@ if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_r
         }, 400);
         </script>
         """, height=0)
+        components.html("""<!DOCTYPE html><html><head><style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:transparent;}
+.overlay{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);}
+.box{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.5);border-radius:20px;padding:40px;width:360px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.6);}
+.icon{font-size:40px;margin-bottom:14px;}
+.title{font-size:19px;font-weight:700;color:#fff;margin-bottom:10px;}
+.msg{font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;margin-bottom:26px;}
+.msg strong{color:#a78bfa;}
+.btn{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:15px;font-weight:700;cursor:pointer;}
+</style></head><body>
+<div class="overlay" id="ov">
+  <div class="box">
+    <div class="icon">&#11015;&#65039;</div>
+    <div class="title">Almost there!</div>
+    <div class="msg">Scroll down for the <strong>specialisation questions</strong> to complete your report.</div>
+    <button class="btn" id="ok">Got it!</button>
+  </div>
+</div>
+<script>
+document.getElementById('ok').addEventListener('click',function(){
+  document.getElementById('ov').style.display='none';
+});
+</script>
+</body></html>""", height=500, scrolling=False)
     top_field = st.session_state["sf_top_field"]
 
     _sf_lang = st.session_state.get("sf_language","English")

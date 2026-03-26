@@ -4985,6 +4985,18 @@ document.addEventListener("mouseout", function(e) {{
   * {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
 }}
 </style>
+<div style="text-align:center;padding:32px 16px 40px;font-family:'DM Sans',sans-serif;">
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSf7u-BbRvTY7U85V7N2ivqH2ZjYah4sYsRKWbl2B_VixgE4sQ/viewform?usp=publish-editor" target="_blank" style="
+    display:inline-block;
+    color:rgba(255,255,255,0.75);
+    font-size:13px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    letter-spacing:0.3px;
+    transition:color 0.2s;">
+    📝 Share your feedback
+  </a>
+</div>
 </body>
 </html>"""
 

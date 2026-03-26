@@ -5002,6 +5002,89 @@ document.addEventListener("mouseout", function(e) {{
     📝 Share your feedback
   </a>
 </div>
+
+<!-- Fixed Download PDF button -->
+<div id="pdf-btn-wrap" style="position:fixed;bottom:28px;right:28px;z-index:9999;">
+  <button id="pdf-dl-btn" onclick="generatePDF()" style="
+    display:flex;align-items:center;gap:10px;
+    background:linear-gradient(135deg,#7c3aed,#ec4899);
+    color:#ffffff;border:none;border-radius:50px;
+    padding:14px 28px;font-size:14px;font-weight:700;
+    font-family:'DM Sans',sans-serif;letter-spacing:0.5px;
+    cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.45);
+    transition:transform 0.15s,box-shadow 0.15s;">
+    &#128438;&nbsp; Download as PDF
+  </button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+async function generatePDF() {{
+  const btn = document.getElementById('pdf-dl-btn');
+  const wrap = document.getElementById('pdf-btn-wrap');
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+  wrap.style.display = 'none';
+
+  // Small delay to let the button hide before capture
+  await new Promise(r => setTimeout(r, 100));
+
+  const {{ jsPDF }} = window.jspdf;
+  const pageW = 794;   // A4 at 96dpi px width
+  const pageH = 1123;  // A4 at 96dpi px height
+
+  try {{
+    const canvas = await html2canvas(document.body, {{
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: document.body.scrollWidth,
+      windowHeight: document.body.scrollHeight,
+      logging: false
+    }});
+
+    const imgW = pageW;
+    const totalH = Math.ceil(canvas.height / canvas.width * imgW);
+    const pdf = new jsPDF({{ unit: 'px', format: [pageW, pageH], hotfixes: ['px_scaling'] }});
+
+    let yOffset = 0;
+    let pageNum = 0;
+
+    while (yOffset < canvas.height) {{
+      // How many source pixels fit in one page
+      const sliceH = Math.floor(pageH * (canvas.width / imgW));
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = Math.min(sliceH, canvas.height - yOffset);
+      const ctx = sliceCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, yOffset, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
+
+      const imgData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+      const renderedH = sliceCanvas.height * (imgW / canvas.width);
+
+      if (pageNum > 0) pdf.addPage([pageW, pageH]);
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgW, renderedH);
+
+      yOffset += sliceCanvas.height;
+      pageNum++;
+    }}
+
+    pdf.save('career-report.pdf');
+  }} catch(err) {{
+    alert('PDF generation failed. Please try again.');
+    console.error(err);
+  }}
+
+  wrap.style.display = 'block';
+  btn.textContent = '⬇️ Download as PDF';
+  btn.disabled = false;
+}}
+</script>
+
 </body>
 </html>"""
 

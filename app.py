@@ -656,6 +656,8 @@ with col1:
     </div>''', unsafe_allow_html=True)
     if st.button(_mu["btn1"], key="btn_mode_interest", use_container_width=True):
         st.session_state.mode = "interest"
+        st.session_state["_show_mode_popup"] = True
+        st.session_state["_popup_lang"] = language
         st.rerun()
 
 with col2:
@@ -668,6 +670,8 @@ with col2:
     </div>''', unsafe_allow_html=True)
     if st.button(_mu["btn2"], key="btn_mode_marks", use_container_width=True):
         st.session_state.mode = "marks"
+        st.session_state["_show_mode_popup"] = True
+        st.session_state["_popup_lang"] = language
         st.rerun()
 
 with col3:
@@ -680,9 +684,35 @@ with col3:
     </div>''', unsafe_allow_html=True)
     if st.button(_mu["btn3"], key="btn_mode_both", use_container_width=True):
         st.session_state.mode = "both"
+        st.session_state["_show_mode_popup"] = True
+        st.session_state["_popup_lang"] = language
         st.rerun()
 
 st.markdown("<div style='margin-bottom:36px;'></div>", unsafe_allow_html=True)
+
+# ── Mode selection popup (pop-up blocker warning) ─────────────────────────────
+if st.session_state.pop("_show_mode_popup", False):
+    _mp_lang = st.session_state.get("_popup_lang", "English")
+    _mp_title = {"English": "Before You Begin", "Zulu": "Ngaphambi Kokuqala", "Swahili": "Kabla Hujaanza"}.get(_mp_lang, "Before You Begin")
+    _mp_msg   = {"English": "Please ensure all <strong>pop-up blockers are disabled</strong> in your browser for successful report generation.", "Zulu": "Sicela uqiniseke ukuthi wonke ama-<strong>pop-up blocker akuvaliwe</strong> kusiphequluli sakho ukuze umbiko ukhiqizwe ngempumelelo.", "Swahili": "Tafadhali hakikisha kwamba vizuizi vyote vya <strong>pop-up vimezimwa</strong> kwenye kivinjari chako kwa utengenezaji wa ripoti uliofanikiwa."}.get(_mp_lang, "Please ensure all <strong>pop-up blockers are disabled</strong> in your browser for successful report generation.")
+    _mp_btn   = {"English": "Got it!", "Zulu": "Ngiyezwa!", "Swahili": "Nimeelewa!"}.get(_mp_lang, "Got it!")
+    components.html(f"""<script>
+(function(){{
+    var doc = window.parent.document;
+    var old = doc.getElementById('_mp');
+    if(old) old.remove();
+    var s = doc.createElement('style');
+    s.textContent='#_mp{{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);}}#_mp_box{{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.5);border-radius:20px;padding:40px;width:380px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.6);}}#_mp_icon{{font-size:40px;margin-bottom:14px;}}#_mp_title{{font-size:19px;font-weight:700;color:#fff;margin-bottom:10px;}}#_mp_msg{{font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;margin-bottom:26px;}}#_mp_msg strong{{color:#a78bfa;}}#_mp_btn{{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:15px;font-weight:700;cursor:pointer;}}';
+    doc.head.appendChild(s);
+    var d = doc.createElement('div');
+    d.id='_mp';
+    d.innerHTML='<div id="_mp_box"><div id="_mp_icon">&#128274;</div><div id="_mp_title">{_mp_title}</div><div id="_mp_msg">{_mp_msg}</div><button id="_mp_btn">{_mp_btn}</button></div>';
+    doc.body.appendChild(d);
+    doc.getElementById('_mp_btn').addEventListener('click',function(){{
+        doc.getElementById('_mp').remove();
+    }});
+}})();
+</script>""", height=0)
 
 # Stop here if no mode chosen yet
 if st.session_state.mode is None:
@@ -3113,22 +3143,26 @@ if st.session_state.get("sf_show_subfield_q") and not st.session_state.get("sf_r
         }, 400);
         </script>
         """, height=0)
-        components.html("""<script>
-(function(){
+        _sm_lang  = st.session_state.get("sf_language", "English")
+        _sm_title = {"English": "Almost there!", "Zulu": "Cishe ufike!", "Swahili": "Umekaribia!"}.get(_sm_lang, "Almost there!")
+        _sm_msg   = {"English": "Scroll down for the <strong>specialisation questions</strong> to complete your report.", "Zulu": "Skrolela phansi ukuze uthole <strong>imibuzo yokukhetheka</strong> ukuqedela umbiko wakho.", "Swahili": "Sogeza chini kwa <strong>maswali ya utaalamu</strong> kukamilisha ripoti yako."}.get(_sm_lang, "Scroll down for the <strong>specialisation questions</strong> to complete your report.")
+        _sm_btn   = {"English": "Got it!", "Zulu": "Ngiyezwa!", "Swahili": "Nimeelewa!"}.get(_sm_lang, "Got it!")
+        components.html(f"""<script>
+(function(){{
     var doc = window.parent.document;
     var old = doc.getElementById('_sm');
     if(old) old.remove();
     var s = doc.createElement('style');
-    s.textContent='#_sm{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);}#_sm_box{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.5);border-radius:20px;padding:40px;width:360px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.6);}#_sm_icon{font-size:40px;margin-bottom:14px;}#_sm_title{font-size:19px;font-weight:700;color:#fff;margin-bottom:10px;}#_sm_msg{font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;margin-bottom:26px;}#_sm_msg strong{color:#a78bfa;}#_sm_btn{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:15px;font-weight:700;cursor:pointer;}';
+    s.textContent='#_sm{{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);}}#_sm_box{{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:1px solid rgba(167,139,250,0.5);border-radius:20px;padding:40px;width:360px;text-align:center;font-family:sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.6);}}#_sm_icon{{font-size:40px;margin-bottom:14px;}}#_sm_title{{font-size:19px;font-weight:700;color:#fff;margin-bottom:10px;}}#_sm_msg{{font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;margin-bottom:26px;}}#_sm_msg strong{{color:#a78bfa;}}#_sm_btn{{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:15px;font-weight:700;cursor:pointer;}}';
     doc.head.appendChild(s);
     var d = doc.createElement('div');
     d.id='_sm';
-    d.innerHTML='<div id="_sm_box"><div id="_sm_icon">&#11015;&#65039;</div><div id="_sm_title">Almost there!</div><div id="_sm_msg">Scroll down for the <strong>specialisation questions</strong> to complete your report.</div><button id="_sm_btn">Got it!</button></div>';
+    d.innerHTML='<div id="_sm_box"><div id="_sm_icon">&#11015;&#65039;</div><div id="_sm_title">{_sm_title}</div><div id="_sm_msg">{_sm_msg}</div><button id="_sm_btn">{_sm_btn}</button></div>';
     doc.body.appendChild(d);
-    doc.getElementById('_sm_btn').addEventListener('click',function(){
+    doc.getElementById('_sm_btn').addEventListener('click',function(){{
         doc.getElementById('_sm').remove();
-    });
-})();
+    }});
+}})();
 </script>""", height=0)
     top_field = st.session_state["sf_top_field"]
 
@@ -4984,16 +5018,21 @@ document.addEventListener("mouseout", function(e) {{
 </script>
 
 
-<div style="text-align:center;padding:32px 16px 40px;font-family:'DM Sans',sans-serif;">
+<div style="text-align:center;padding:40px 16px 52px;font-family:'DM Sans',sans-serif;">
   <a href="https://docs.google.com/forms/d/e/1FAIpQLSf7u-BbRvTY7U85V7N2ivqH2ZjYah4sYsRKWbl2B_VixgE4sQ/viewform?usp=publish-editor" target="_blank" style="
     display:inline-block;
-    color:rgba(255,255,255,0.75);
-    font-size:13px;
-    text-decoration:underline;
-    text-underline-offset:3px;
-    letter-spacing:0.3px;
-    transition:color 0.2s;">
-    📝 Share your feedback
+    background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(236,72,153,0.13));
+    border:1px solid rgba(167,139,250,0.45);
+    border-radius:50px;
+    padding:16px 44px;
+    color:#ffffff;
+    font-size:16px;
+    font-weight:700;
+    text-decoration:none;
+    letter-spacing:0.4px;
+    box-shadow:0 4px 24px rgba(124,58,237,0.18);
+    transition:all 0.2s;">
+    📝 Share Your Feedback
   </a>
 </div>
 </body>
